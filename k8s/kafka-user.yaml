@@ -1,0 +1,28 @@
+#Este usuário terá permissão específica apenas para escrever neste tópico. 
+#Usaremos autenticação SCRAM-SHA-512, que é segura e suportada nativamente pelo driver Python.
+
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaUser
+metadata:
+  name: locust-user
+  namespace: kafka
+  labels:
+    strimzi.io/cluster: my-cluster
+spec:
+  authentication:
+    type: scram-sha-512
+  authorization:
+    type: simple
+    acls:
+      # Permite escrever (Produzir dados)
+      - resource:
+          type: topic
+          name: benchmark-logs
+          patternType: literal
+        operation: Write
+      # Permite ler metadados (Necessário para conectar)
+      - resource:
+          type: topic
+          name: benchmark-logs
+          patternType: literal
+        operation: Describe
