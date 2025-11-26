@@ -1,0 +1,27 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: kafka-metrics
+  namespace: kafka
+  labels:
+    app: strimzi
+data:
+  # Configuração para métricas do Kafka Broker
+  kafka-metrics-config.yml: |
+    lowercaseOutputName: true
+    rules:
+    - pattern: kafka.server<type=(.+), name=(.+)><>Value
+      name: kafka_server_$1_$2
+    - pattern: kafka.network<type=RequestMetrics, name=RequestsPerSec, request=(.+)><>OneMinuteRate
+      name: kafka_network_requestmetrics_requestspersec
+      labels:
+        request: "$1"
+  
+  # Configuração para métricas do Zookeeper
+  zookeeper-metrics-config.yml: |
+    lowercaseOutputName: true
+    rules:
+    - pattern: org.apache.ZooKeeperService<name0=ReplicatedServer_id(\d+)><>(\w+)
+      name: zookeeper_$2
+      labels:
+        replicaId: "$1"
