@@ -69,7 +69,7 @@ class KafkaClient:
 
 class KafkaUser(User):
     """Simula um dispositivo/usuário gerando logs"""
-    abstract = True
+    #abstract = True
     client = None
 
     def on_start(self):
