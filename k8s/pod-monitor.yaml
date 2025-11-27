@@ -1,0 +1,21 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: kafka-resources-metrics
+  namespace: monitoring
+  labels:
+    release: prometheus
+    app: strimzi
+spec:
+  selector:
+    matchExpressions:
+      - key: "strimzi.io/kind"
+        operator: In
+        values: ["Kafka", "ZooKeeper"]
+  namespaceSelector:
+    matchNames:
+      - kafka
+  podMetricsEndpoints:
+  - path: /metrics
+    port: tcp-prometheus
+    interval: 10s
