@@ -1,20 +1,20 @@
-# Dockerfile
-
 # 1. Começamos com a imagem oficial do Locust
-FROM locustio/locust
+FROM locustio/locust:latest
 
-# 2. INSTALAÇÃO DAS DEPENDÊNCIAS DE SISTEMA (A CORREÇÃO)
-#    - build-essential: Instala o compilador C/C++ (gcc, make, etc.)
-#    - python3-dev: Instala os headers de desenvolvimento do Python
-#    - librdkafka-dev: Instala a biblioteca C do Kafka que o pip precisa para compilar
+# 2. MUDANÇA CRÍTICA: Trocamos para o usuário ROOT para ter permissão de instalar pacotes
+USER root
+
+# 3. Instalamos as dependências de compilação (gcc, python-dev, librdkafka)
+#    Isso resolve o erro "command 'gcc' failed" e o erro "Permission denied"
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     python3-dev \
-    librdkafka-dev
+    librdkafka-dev \
+    && rm -rf /var/lib/apt/lists/*
 
-# 3. Copiamos nosso arquivo de dependências para dentro da imagem
+# 4. Voltamos para o usuário padrão do Locust (Boas práticas de segurança)
+USER locust
+
+# 5. Copiamos o arquivo e instalamos as bibliotecas Python
 COPY src/requirements.txt /requirements.txt
-
-# 4. Agora sim, executamos o pip para instalar as bibliotecas
-#    Ele encontrará as ferramentas de compilação e terá sucesso.
 RUN pip install --no-cache-dir -r /requirements.txt
