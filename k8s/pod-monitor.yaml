@@ -19,3 +19,11 @@ spec:
   - path: /metrics
     port: tcp-prometheus
     interval: 10s
+    # --- A MÁGICA ACONTECE AQUI ---
+    relabelings:
+    - sourceLabels: [__meta_kubernetes_pod_label_strimzi_io_cluster]
+      targetLabel: strimzi_io_cluster
+    - sourceLabels: [__meta_kubernetes_pod_label_strimzi_io_kind]
+      targetLabel: strimzi_io_kind
+    - sourceLabels: [__meta_kubernetes_pod_label_strimzi_io_name]
+      targetLabel: strimzi_io_name
