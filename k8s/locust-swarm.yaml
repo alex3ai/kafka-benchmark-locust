@@ -18,7 +18,7 @@ spec:
     spec:
       containers:
       - name: locust-master
-        image: locustio/locust
+        image: alex3ai/kafka-locust:1.0
         env:
         - name: KAFKA_BOOTSTRAP
           value: "my-cluster-kafka-external-bootstrap.kafka.svc:9094"
@@ -77,7 +77,7 @@ spec:
     spec:
       containers:
       - name: locust-worker
-        image: locustio/locust
+        image: alex3ai/kafka-locust:1.0
         env:
         - name: KAFKA_BOOTSTRAP
           value: "my-cluster-kafka-external-bootstrap.kafka.svc:9094"

@@ -1,8 +1,8 @@
 # 1. Começamos com a imagem oficial do Locust
 FROM locustio/locust:latest
 
-# 2. MUDANÇA CRÍTICA: Trocamos para o usuário ROOT para ter permissão de instalar pacotes
-USER root
+# 2. MUDANÇA CRÍTICA: Voltamos para locust
+USER locust 
 
 # 3. Instalamos as dependências de compilação (gcc, python-dev, librdkafka)
 #    Isso resolve o erro "command 'gcc' failed" e o erro "Permission denied"
