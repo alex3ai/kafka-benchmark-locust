@@ -1,0 +1,98 @@
+# k8s/locust-swarm.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: locust-master
+  namespace: kafka
+  labels:
+    app: locust-master
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: locust-master
+  template:
+    metadata:
+      labels:
+        app: locust-master
+    spec:
+      containers:
+      - name: locust-master
+        image: locustio/locust
+        env:
+        - name: KAFKA_BOOTSTRAP
+          value: "my-cluster-kafka-external-bootstrap.kafka.svc:9094"
+        - name: SASL_USER
+          value: "locust-user"
+        - name: SASL_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: kafka-locust-secret
+              key: password
+        args: ["--master", "-f", "/mnt/locust/locustfile.py"]
+        ports:
+        - containerPort: 8089
+        - containerPort: 5557
+        volumeMounts:
+        - name: locust-script-volume
+          mountPath: /mnt/locust
+      volumes:
+      - name: locust-script-volume
+        configMap:
+          name: locust-script
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: locust-master-svc
+  namespace: kafka
+spec:
+  type: LoadBalancer
+  selector:
+    app: locust-master
+  ports:
+  - name: web-ui
+    port: 8089
+    targetPort: 8089
+  - name: master-p1
+    port: 5557
+    targetPort: 5557
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: locust-worker
+  namespace: kafka
+  labels:
+    app: locust-worker
+spec:
+  replicas: 10
+  selector:
+    matchLabels:
+      app: locust-worker
+  template:
+    metadata:
+      labels:
+        app: locust-worker
+    spec:
+      containers:
+      - name: locust-worker
+        image: locustio/locust
+        env:
+        - name: KAFKA_BOOTSTRAP
+          value: "my-cluster-kafka-external-bootstrap.kafka.svc:9094"
+        - name: SASL_USER
+          value: "locust-user"
+        - name: SASL_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: kafka-locust-secret
+              key: password
+        args: ["--worker", "-f", "/mnt/locust/locustfile.py", "--master-host", "locust-master-svc"]
+        volumeMounts:
+        - name: locust-script-volume
+          mountPath: /mnt/locust
+      volumes:
+      - name: locust-script-volume
+        configMap:
+          name: locust-script

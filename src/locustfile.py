@@ -24,7 +24,7 @@ CONF = {
     
     # OTIMIZAÇÃO DE THROUGHPUT (Vazão)
     'linger.ms': 10,           # Aguarda até 10ms para encher um lote (batch)
-    'batch.size': 65536,       # Tamanho máximo do lote: 64KB
+    'batch.size': 131072,       # Tamanho máximo do lote: 64KB
     'compression.type': 'lz4', # Compactação rápida (economiza rede)
     'acks': '1',               # 1 = Líder confirma (Rápido). 'all' = Lento/Seguro.
     'queue.buffering.max.messages': 100000, # Fila local grande para não travar
