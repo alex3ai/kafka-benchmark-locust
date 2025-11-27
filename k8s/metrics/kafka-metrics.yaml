@@ -6,22 +6,42 @@ metadata:
   labels:
     app: strimzi
 data:
-  # Configuração para métricas do Kafka Broker
-  kafka-metrics-config.yml: |
-    lowercaseOutputName: true
-    rules:
-    - pattern: kafka.server<type=(.+), name=(.+)><>Value
-      name: kafka_server_$1_$2
-    - pattern: kafka.network<type=RequestMetrics, name=RequestsPerSec, request=(.+)><>OneMinuteRate
-      name: kafka_network_requestmetrics_requestspersec
-      labels:
-        request: "$1"
-  
-  # Configuração para métricas do Zookeeper
   zookeeper-metrics-config.yml: |
     lowercaseOutputName: true
     rules:
-    - pattern: org.apache.ZooKeeperService<name0=ReplicatedServer_id(\d+)><>(\w+)
-      name: zookeeper_$2
+    - pattern: "org.apache.ZooKeeperService<name0=ReplicatedServer_id(\\d+)><>(\\w+)"
+      name: "zookeeper_$2"
+      type: GAUGE
       labels:
         replicaId: "$1"
+    # Adicionando métricas da JVM para o Zookeeper também
+    - pattern: java.lang<type=(.*), name=(.*)><>(.*)
+      name: jvm_$1_$2_$3
+      type: GAUGE
+
+  kafka-metrics-config.yml: |
+    lowercaseOutputName: true
+    rules:
+    # --- 1. MÉTRICAS DA JVM (MEMÓRIA/CPU) ---
+    - pattern: java.lang<type=(.*), name=(.*)><>(.*)
+      name: jvm_$1_$2_$3
+      type: GAUGE
+      
+    # --- 2. MÉTRICAS DE MENSAGENS (Dashboard) ---
+    - pattern: kafka.server<type=BrokerTopicMetrics, name=MessagesInPerSec><>Count
+      name: kafka_server_brokertopicmetrics_messagesin_total
+      type: COUNTER
+    - pattern: kafka.server<type=BrokerTopicMetrics, name=BytesInPerSec><>Count
+      name: kafka_server_brokertopicmetrics_bytesin_total
+      type: COUNTER
+    - pattern: kafka.server<type=BrokerTopicMetrics, name=BytesOutPerSec><>Count
+      name: kafka_server_brokertopicmetrics_bytesout_total
+      type: COUNTER
+      
+    # --- 3. GENÉRICAS ---
+    - pattern: kafka.server<type=(.+), name=(.+)><>Count
+      name: kafka_server_$1_$2_total
+      type: COUNTER
+    - pattern: kafka.server<type=(.+), name=(.+)><>Value
+      name: kafka_server_$1_$2
+      type: GAUGE
